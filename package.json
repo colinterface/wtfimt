@@ -1,0 +1,19 @@
+{
+  "name": "wtfimt",
+  "version": "0.0.0",
+  "description": "find out where the fuck your train is",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "/.git"
+  },
+  "author": "ultralame",
+  "license": "MIT",
+  "dependencies": {
+    "request": "^2.57.0",
+    "xml2js": "^0.4.9"
+  }
+}
