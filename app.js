@@ -1,58 +1,60 @@
-var parseString = require('xml2js').parseString;
-var request = require('request');
+var express = require('express');
+var path = require('path');
+var favicon = require('serve-favicon');
+var logger = require('morgan');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 
-var timeToStation = 4;
+var routes = require('./routes/index');
+var users = require('./routes/users');
 
-// real time departure estimates northbound from powell st
-request('http://api.bart.gov/api/etd.aspx?cmd=etd&orig=powl&' +
-  'key=MW9S-E7SL-26DU-VV8V&dir=n', function(error, response, body) {
-  if (!error && response.statusCode === 200) {
-    parseString(body, function (error, result) {
-      var departures = [];
-      var lines = result.root.station[0].etd;
-      lines.forEach(function(line) {
-        line.estimate.forEach(function(train) {
-          if (train.minutes[0] !== 'Leaving') {
-            departures.push(parseInt(train.minutes[0]));
-          }
-        });
-      });
-      departures.sort(function(a, b) {
-        return a - b;
-      });
+var app = express();
 
-      departures = departures.filter(function(item) {
-        return item >= timeToStation;
-      });
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 
-      var soon = departures.filter(function(item) {
-        return item <= 15;
-      });
+// uncomment after placing your favicon in /public
+//app.use(favicon(__dirname + '/public/favicon.ico'));
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-      var hella = false;
+app.use('/', routes);
+app.use('/users', users);
 
-      if (soon.length >= 3) {
-        hella = true;
-      }
-
-
-      if (soon[0] <= 8) {
-        console.log('FUCK! the next train leaves in ' + soon[0] + ' minutes!');
-        if (hella) {
-          console.log("but your shit is fine because there's hella trains in this bitch.");
-        } else {
-          // console.log('the one after that is in ' + soon[1] + ' minutes.')
-        }
-      } else {
-        console.log('fuck this noise! next train leaves in ' + departures[0] + ' minutes.')
-      }
-      // console.log(departures);
-      departures.forEach(function(departure) {
-        console.log(departure + ' minutes');
-      });
-
-    });
-  } else {
-    console.log(error + '...motherfucking ' + response.statusCode + '! bullshit!');
-  }
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
 });
+
+// error handlers
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
+    });
+  });
+}
+
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
+});
+
+
+module.exports = app;
