@@ -4,7 +4,7 @@ var request = require('request');
 var timeToStation = 4;
 
 // real time departure estimates northbound from powell st
-module.exports = function() {
+module.exports = function(callback) {
   var result = {};
   request('http://api.bart.gov/api/etd.aspx?cmd=etd&orig=powl&' +
   'key=MW9S-E7SL-26DU-VV8V&dir=n', function(error, response, body) {
@@ -57,11 +57,13 @@ module.exports = function() {
           console.log(departure + ' minutes');
         });
 
+      console.log(result.main, result.sub);
+      callback(result.main, result.sub, departures.join(', '));
       });
+
     } else {
       result.main = error + '...motherfucking ' + response.statusCode + '! bullshit!';
       console.log(result.main);
     }
   });
-  return result;
 };
